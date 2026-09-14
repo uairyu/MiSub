@@ -14,6 +14,7 @@ export const COMMON_NODE_PROTOCOLS = [
     'hy2',
     'tuic',
     'anytls',
+    'v2rayn',
     'socks5',
     'socks',
     'snell',

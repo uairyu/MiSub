@@ -18,7 +18,7 @@ import { isSuspiciousNodeCountDrop } from '../../services/node-cache-service.js'
 
 // 创建用于全局匹配的协议正则表达式
 const NODE_PROTOCOL_GLOBAL_REGEX = new RegExp(
-    '^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|anytls|socks5|socks):\\/\\/',
+    '^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|anytls|v2rayn|socks5|socks):\\/\\/',
     'gm'
 );
 

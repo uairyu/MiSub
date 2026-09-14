@@ -3,6 +3,7 @@
  */
 
 import { extractNodeMetadata } from '../modules/utils/metadata-extractor.js';
+import { convertV2raynUrlToStandard } from './v2rayn-utils.js';
 import { isLocalProxyEndpoint } from './node-utils.js';
 
 const VIRTUAL_INFO_NODE_PASSWORD = '00000000-0000-0000-0000-000000000000';
@@ -1196,8 +1197,12 @@ function parseAnytlsUrl(url) {
             params.get('pinnedPeerCertSha256') ||
             params.get('pinned-peer-cert-sha256') ||
             params.get('peer-cert-sha256') ||
-            params.get('certSha256');
+            params.get('certSha256') ||
+            params.get('pcs');
         if (pinnedPeerCertSha256) proxy.pinnedPeerCertSha256 = pinnedPeerCertSha256;
+        if (params.get('fp') || params.get('client-fingerprint')) {
+            proxy['client-fingerprint'] = params.get('fp') || params.get('client-fingerprint');
+        }
 
         proxy.udp = true;
         return proxy;
@@ -1443,6 +1448,10 @@ function parseSsdUrl(url) {
  */
 export function urlToClashProxy(url) {
     if (!url || typeof url !== 'string') return null;
+
+    if (url.trim().toLowerCase().startsWith('v2rayn://')) {
+        url = convertV2raynUrlToStandard(url);
+    }
 
     const lowerUrl = url.toLowerCase();
 

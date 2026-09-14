@@ -642,6 +642,35 @@ export function parseNodeInfo(nodeUrl) {
         };
     }
 
+    // 支持 v2rayn:// 专有链接解析
+    if (nodeUrl.trim().toLowerCase().startsWith('v2rayn://')) {
+        try {
+            const match = nodeUrl.trim().match(/^v2rayn:\/\/([^\/]+)\/([A-Za-z0-9+/=_-]+)/i);
+            if (match) {
+                const subType = match[1].toLowerCase();
+                const normalized = normalizeBase64(match[2]);
+                const binary = atob(normalized);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                const jsonStr = new TextDecoder('utf-8').decode(bytes);
+                const config = JSON.parse(jsonStr);
+                const nodeName = config.Remarks || config.remarks || '未命名节点';
+                return {
+                    protocol: subType,
+                    name: nodeName.replace(/🇹🇼/g, '🇨🇳'),
+                    region: extractNodeRegion(nodeName),
+                    server: config.Address || config.address || '',
+                    port: config.Port ? String(config.Port) : '',
+                    url: nodeUrl,
+                };
+            }
+        } catch {
+            // fallback
+        }
+    }
+
     // 提取协议
     const protocolMatch = nodeUrl.match(/^(.*?):\/\//);
     const protocol = protocolMatch ? protocolMatch[1].toLowerCase() : 'unknown';

@@ -6,12 +6,13 @@
 // [修复] 使用正确的相对路径引用 modules/utils 下的 geo-utils
 import { extractNodeRegion, getRegionEmoji } from '../modules/utils/geo-utils.js';
 import { extractNodeMetadata } from '../modules/utils/metadata-extractor.js';
+import { convertV2raynUrlToStandard } from './v2rayn-utils.js';
 
 /**
  * 节点协议正则表达式
  */
 export const NODE_PROTOCOL_REGEX =
-    /^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|snell|anytls|socks5|socks|wireguard|naive\+https?|naive\+quic):\/\//i;
+    /^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|snell|anytls|v2rayn|socks5|socks|wireguard|naive\+https?|naive\+quic):\/\//i;
 
 /**
  * 判断代理是否指向本机/未指定地址。
@@ -96,6 +97,10 @@ function updateSsrRemarks(link, updater) {
  */
 export function prependNodeName(link, prefix) {
     if (!prefix) return link;
+
+    if (link?.toLowerCase?.().startsWith('v2rayn://')) {
+        link = convertV2raynUrlToStandard(link);
+    }
 
     if (link?.toLowerCase?.().startsWith('ssr://')) {
         return updateSsrRemarks(link, (originalName) => {

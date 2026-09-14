@@ -174,6 +174,7 @@ function extractNodeUrls(text) {
         'tuic://',
         'snell://',
         'anytls://',
+        'v2rayn://',
         'wireguard://',
         'socks5://',
         'socks5-tls://',

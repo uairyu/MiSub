@@ -408,7 +408,7 @@ export async function handlePreviewContentRequest(request, env) {
             contentInfo.contentType = 'singbox-config';
         } else {
             const nodeMatches = decodedContent.match(
-                /^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|anytls|socks5|socks):\/\//gm
+                /^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|anytls|v2rayn|socks5|socks):\/\//gm
             );
             if (nodeMatches) {
                 contentInfo.contentType = 'node-list';

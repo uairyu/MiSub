@@ -11,12 +11,13 @@ import { fixNodeUrlEncoding } from '../../utils/node-utils.js';
 import { convertClashProxyToUrl } from '../../utils/clash-to-url.js';
 import { validateSS2022Node, fixSS2022Node } from './ss2022-validator.js';
 import { extractNodeMetadata } from './metadata-extractor.js';
+import { convertV2raynUrlToStandard } from '../../utils/v2rayn-utils.js';
 
 /**
  * 支持的节点协议正则表达式
  */
 export const NODE_PROTOCOL_REGEX =
-    /^(ss|ssr|vmess|vless|trojan|hysteria2|hy2|hysteria|tuic|snell|naive\+https?|naive\+quic|socks5|socks|http|anytls|wireguard):\/\//i;
+    /^(ss|ssr|vmess|vless|trojan|hysteria2|hy2|hysteria|tuic|snell|naive\+https?|naive\+quic|socks5|socks|http|anytls|v2rayn|wireguard):\/\//i;
 
 /**
  * 尝试解析 Surge 或 Quantumult X 格式的节点字符串
@@ -292,8 +293,11 @@ export function parseNodeList(content, options = {}) {
 
     return validNodes
         .map((nodeUrl) => {
+            // 0. 转换 v2rayn:// 专有链接为标准节点链接 (如 anytls://)
+            let fixedUrl = convertV2raynUrlToStandard(nodeUrl);
+
             // 1. 修复编码 (如 Hysteria2 密码)
-            let fixedUrl = fixNodeUrlEncoding(nodeUrl, options);
+            fixedUrl = fixNodeUrlEncoding(fixedUrl, options);
 
             // 2. [新增] 验证和修复 SS 2022 节点 & 过滤传统 SS 算法
             let ss2022Warning = null;

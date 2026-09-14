@@ -323,6 +323,26 @@ export function applyManualNodeName(nodeUrl, customName) {
         }
     }
 
+    if (nodeUrl.startsWith('v2rayn://')) {
+        try {
+            const match = nodeUrl.trim().match(/^v2rayn:\/\/([^\/]+)\/([A-Za-z0-9+/=_-]+)/i);
+            if (match) {
+                const subType = match[1];
+                let base64Part = match[2].replace(/-/g, '+').replace(/_/g, '/');
+                while (base64Part.length % 4 !== 0) base64Part += '=';
+                const jsonStr = new TextDecoder('utf-8').decode(
+                    Uint8Array.from(atob(base64Part), (c) => c.charCodeAt(0))
+                );
+                const config = JSON.parse(jsonStr);
+                config.Remarks = customName;
+                const newBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
+                return `v2rayn://${subType}/${newBase64}`;
+            }
+        } catch (e) {
+            return nodeUrl;
+        }
+    }
+
     if (nodeUrl.startsWith('ss://')) {
         const hashIndex = nodeUrl.indexOf('#');
         const baseUrl = hashIndex === -1 ? nodeUrl : nodeUrl.substring(0, hashIndex);

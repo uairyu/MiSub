@@ -293,8 +293,8 @@ export function parseNodeList(content, options = {}) {
 
     return validNodes
         .map((nodeUrl) => {
-            // 0. 转换 v2rayn:// 专有链接为标准节点链接 (如 anytls://)
-            let fixedUrl = convertV2raynUrlToStandard(nodeUrl);
+            // 保持原始 URL (v2rayn:// 等) 完整，不提前降级转换，以保留 Cert 证书等内部参数
+            let fixedUrl = nodeUrl;
 
             // 1. 修复编码 (如 Hysteria2 密码)
             fixedUrl = fixNodeUrlEncoding(fixedUrl, options);

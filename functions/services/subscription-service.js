@@ -850,6 +850,31 @@ function applyManualNodeName(nodeUrl, customName) {
         }
     }
 
+    // v2rayn 协议：修改 base64 解码后 JSON 中的 Remarks 字段
+    if (nodeUrl.startsWith('v2rayn://')) {
+        try {
+            const match = nodeUrl.trim().match(/^v2rayn:\/\/([^\/]+)\/([A-Za-z0-9+/=_-]+)/i);
+            if (match) {
+                const subType = match[1];
+                let base64Part = match[2].replace(/-/g, '+').replace(/_/g, '/');
+                while (base64Part.length % 4 !== 0) base64Part += '=';
+                const jsonString = new TextDecoder('utf-8').decode(
+                    Uint8Array.from(atob(base64Part), (c) => c.charCodeAt(0))
+                );
+                const nodeConfig = JSON.parse(jsonString);
+                if (nodeConfig && typeof nodeConfig === 'object') {
+                    nodeConfig.Remarks = customName;
+                    const newBase64Part = btoa(
+                        unescape(encodeURIComponent(JSON.stringify(nodeConfig)))
+                    );
+                    return `v2rayn://${subType}/${newBase64Part}`;
+                }
+            }
+        } catch (e) {
+            console.debug('[Subscription] v2rayn decode failed:', e);
+        }
+    }
+
     // 其他协议：修改 URL 的 #fragment 部分
     try {
         const hashIndex = nodeUrl.lastIndexOf('#');

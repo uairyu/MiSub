@@ -6,7 +6,7 @@
 // [修复] 使用正确的相对路径引用 modules/utils 下的 geo-utils
 import { extractNodeRegion, getRegionEmoji } from '../modules/utils/geo-utils.js';
 import { extractNodeMetadata } from '../modules/utils/metadata-extractor.js';
-import { convertV2raynUrlToStandard } from './v2rayn-utils.js';
+import { updateV2raynRemarks, isV2raynUrl } from './v2rayn-utils.js';
 
 /**
  * 节点协议正则表达式
@@ -98,8 +98,11 @@ function updateSsrRemarks(link, updater) {
 export function prependNodeName(link, prefix) {
     if (!prefix) return link;
 
-    if (link?.toLowerCase?.().startsWith('v2rayn://')) {
-        link = convertV2raynUrlToStandard(link);
+    if (isV2raynUrl(link)) {
+        return updateV2raynRemarks(link, (originalName) => {
+            if (originalName.startsWith(prefix)) return originalName;
+            return originalName ? `${prefix} - ${originalName}` : prefix;
+        });
     }
 
     if (link?.toLowerCase?.().startsWith('ssr://')) {
@@ -182,6 +185,10 @@ export function addFlagEmoji(link) {
 
     if (link.toLowerCase().startsWith('ssr://')) {
         return updateSsrRemarks(link, appendEmoji);
+    }
+
+    if (isV2raynUrl(link)) {
+        return updateV2raynRemarks(link, appendEmoji);
     }
 
     if (link.startsWith('vmess://')) {
@@ -297,6 +304,10 @@ export function removeFlagEmoji(link) {
         } catch (e) {
             return link;
         }
+    }
+
+    if (isV2raynUrl(link)) {
+        return updateV2raynRemarks(link, stripFlagEmoji);
     }
 
     const hashIndex = link.lastIndexOf('#');

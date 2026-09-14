@@ -1199,7 +1199,11 @@ function parseAnytlsUrl(url) {
             params.get('peer-cert-sha256') ||
             params.get('certSha256') ||
             params.get('pcs');
-        if (pinnedPeerCertSha256) proxy.pinnedPeerCertSha256 = pinnedPeerCertSha256;
+        if (pinnedPeerCertSha256) {
+            proxy.pinnedPeerCertSha256 = pinnedPeerCertSha256;
+            // Mihomo (Clash.Meta) 的 AnyTLS 使用 fingerprint 字段校验证书 SHA256
+            proxy.fingerprint = pinnedPeerCertSha256;
+        }
         if (params.get('fp') || params.get('client-fingerprint')) {
             proxy['client-fingerprint'] = params.get('fp') || params.get('client-fingerprint');
         }

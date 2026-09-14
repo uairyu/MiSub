@@ -2,7 +2,7 @@
  * v2rayN 客户端专有节点格式转换工具
  *
  * 处理形如: v2rayn://<protocol>/<base64-json> 的专有链接
- * 例如: v2rayn://anytls/eyJDb25maWdUeXBlIjoxMS...
+ * 并转换为 v2rayN 原生完全兼容的标准 anytls:// 链接
  */
 
 function normalizeBase64(input) {
@@ -38,7 +38,8 @@ export function isV2raynUrl(url) {
 }
 
 /**
- * 将 v2rayn:// 协议链接转换为标准节点 URL (例如 anytls://)
+ * 将 v2rayn:// 协议链接转换为 v2rayN 完全兼容的标准 anytls:// 节点链接
+ * 包含完整的 security=tls, type=tcp, headerType=none, fp, pcs 等参数
  * 如果不是 v2rayn:// 或转换失败则返回原始 url
  * @param {string} url
  * @returns {string}
@@ -64,24 +65,34 @@ export function convertV2raynUrlToStandard(url) {
             const port = config.Port || 443;
             const remarks = config.Remarks || '';
 
+            // 构造与 v2rayN 客户端原生导出一模一样的参数顺序与字段
             const params = [];
-            if (config.Sni) params.push(`sni=${encodeURIComponent(config.Sni)}`);
-            if (config.AllowInsecure === 'true' || config.AllowInsecure === true) {
-                params.push('insecure=1');
+            params.push(`security=${encodeURIComponent(config.StreamSecurity || 'tls')}`);
+
+            if (config.Sni) {
+                params.push(`sni=${encodeURIComponent(config.Sni)}`);
             }
-            // v2rayN anytls 的 CertSha 对应 Clash/MiSub 的 certSha / pcs
-            if (config.CertSha) {
-                params.push(`certSha=${encodeURIComponent(config.CertSha)}`);
-                params.push(`pcs=${encodeURIComponent(config.CertSha)}`);
-            }
+
             if (config.Fingerprint) {
                 params.push(`fp=${encodeURIComponent(config.Fingerprint)}`);
             }
+
+            if (config.CertSha) {
+                params.push(`pcs=${encodeURIComponent(config.CertSha)}`);
+            }
+
+            params.push('type=tcp');
+            params.push('headerType=none');
+
+            if (config.AllowInsecure === 'true' || config.AllowInsecure === true) {
+                params.push('insecure=1');
+            }
+
             if (config.Alpn) {
                 params.push(`alpn=${encodeURIComponent(config.Alpn)}`);
             }
 
-            const query = params.length > 0 ? `?${params.join('&')}` : '';
+            const query = `?${params.join('&')}`;
             const hash = remarks ? `#${encodeURIComponent(remarks)}` : '';
             return `anytls://${encodeURIComponent(password)}@${address}:${port}${query}${hash}`;
         }
